@@ -1,0 +1,557 @@
+---
+title: "Zadania z lab1 i lab2"
+author: "Martyński Tomasz"
+date: "2024-10-09"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Laboratorium 1
+
+### Zadanie 1
+
+Zainicjuj dwa wektory: a=[4,0.5, 7, 0.5] oraz b=[2,0.1,3, 5.2]
+
+1.  Policz średnią dla wektora a.
+2.  Policz iloczyn skalarny a $\circ$ b.
+3.  Policz średnią ważoną, elementów wektora a, gdzie wagi są określone
+    w wektorze b.
+4.  Oblicz odległość euklidesową pomiędzy wektorami a i b.
+
+```{r}
+a=c(4,0.5,7,0.5)
+b=c(2,0.1,3,5.2)
+
+mean(a)
+sum(a*b)
+sum(a*b)/sum(b)
+sqrt(sum((a-b)^2))
+```
+
+### Zadanie 2
+
+Niech
+$x = (7, 9, 13, 8, 4, 2, 16, 1, 6, 19, 15, 12, 19, 14, 8, 2, 19, 11, 18, 7)$.
+Wypisz:
+
+1.  Drugi element wektora $x$.
+
+2.  Pierwsze pięć elementów wektora $x$.
+
+3.  Indeksy $i$ współrzędnych wektora $x$, dla których $x_i >14$.
+
+4.  Wszystkie elementy z wyjątkiem elementów na pozycjach 6, 10 i 12.
+
+```{r}
+x=c(7,9,13,8,4,2,16,1,6,19,15,12,19,14,8,2,19,11,18,7)
+
+x[2]
+x[1:5]
+ind=which(x>14)
+ind
+ind2=c(6,10,12)
+x[-ind2]
+```
+
+### Zadanie 3
+
+Używając tylko funkcji `rep()` i `seq()`, wygeneruj następujące ciągi
+(możesz użyć funkcji `c()`, ale nie bezpośrednio (np. nie pisz
+`c(0,6,0,6,0,6)` odpowiadając na pierwsze pytanie).
+
+1.  0 6 0 6 0 6
+
+2.  1 4 7 10
+
+3.  1 2 3 1 2 3 1 2 3 1 2 3
+
+4.  1 2 2 3 3 3
+
+5.  1 1 1 2 2 3
+
+6.  1 5.5 10
+
+7.  1 1 1 1 2 2 2 2 3 3 3 3
+
+```{r}
+rep(c(0,6),3)
+seq(1,10,length=4)
+rep(seq(1,3,by=1),4)
+c(rep(1,1),rep(2,2),rep(3,3))
+c(rep(1,3), rep(2,2), rep(3,1))
+seq(1,10,length=3)
+c(rep(1,4), rep(2,4), rep(3,4))
+```
+
+### Zadanie 4
+
+1.  Utwórz wektor $a = (2.5, 3, 1, 0, 4, -1)$.
+
+2.  Posortuj wektor $a$ rosnąco za pomocą funkcji `sort()`. Do czego
+    służy funkcja `order`? Posortuj wektor $a$ rosnąco używając funkcji
+    `order()`. <br><br>
+
+```{r}
+a=c(2.5,3,1,0,4,-1)
+sort(a)
+
+ind=order(a)
+b=a[ind]
+b
+```
+
+### Zadanie 5
+
+Obliczyć średnią harmoniczną wektora
+$x = (7, 13, 3, 8, 12, 12, 20, 11)$. <br><br>
+
+```{r}
+x=c(7,13,3,8,12,12,12,20,11)
+har_mean=length(x)/(mean(1/x)*length(x))
+har_mean
+```
+
+## Laboratorium 2
+
+### Zadanie 1 - macierze
+
+a.  Utworzyć wektor `x=(2;2;2;2;2)` za pomocą funkcji `rep` oraz wektor
+    `y=(-1;0;1;2;3)` za pomocą funkcji `seq`.
+
+b.  Utworzyć macierz **A** o 5 wierszach i 2 kolumnach, w której
+    pierwsza kolumna składa się z elementów wektora `x` a druga z
+    elementów wektora `y` .
+
+c.  Zmienić drugi wiersz macierzy **A** na wiersz postaci (2;4)
+
+```{r}
+# a)
+x=rep(2,5)
+y=seq(-1,3,by=1)
+
+# b)
+A=cbind(x,y)
+
+# c)
+A[2,]=c(2,4)
+A
+```
+
+### Zadanie 2 - macierze
+
+a.  Utworzyć macierz\
+    $\mathbf{A}=\left( \begin{array}{ccc} 2&23&8\\10&6&90\\4&7&12\end{array}\right)$\
+    za pomocą poleceń `cbind` i/lub `matrix`. Czy da się utworzyć tą
+    macierz za pomocą polecenia `rbind`?
+b.  Obliczyć średnią oraz iloczyn elementów w wierszach i kolumnach
+    macierzy **A** za pomocą funkcji `apply`, `sum` oraz `prod`.
+c.  Obliczyć sumę wszystkich liczb z dwóch pierwszych wierszy macierzy
+    **A**, a następnie sumę wszystkich liczb z pierwszej i trzeciej
+    kolumny
+d.  Co zwracają polecenia `t(A)`, `det(A)` i `diag(A)`? Wyznaczyć ślad
+    macierzy **A**.
+e.  Co zwracają polecenia `A^2`, `A*A`, `A%*%A`?
+f.  Co zwracają polecenia `1/A`, `A^(-1)`, `solve(A)`?
+
+```{r}
+# a)
+A=matrix(c(2,10,4,23,6,7,8,90,12), nrow=3)
+#A=cbind(c(2,10,4), c(23,6,7), c(8,90,12))
+#A=rbind(c(2,23,8), c(10,6,90), c(4,7,12))
+
+# b)
+apply(A, 1, sum)/3 #wiersze
+apply(A, 2, sum)/3 #kolumny
+apply(A, 1, prod)
+apply(A, 2, prod)
+
+# c)
+sum(apply(A[1:2,],1,sum))
+sum(apply(A[,-2],2,sum))
+
+# d)
+#t(A) - transpozycja macierzy A
+#det(A) - wyznacznik A
+#diag(A) - przekątna główna macierzy A (typ "numeric")
+sum(diag(A))
+
+# e)
+# polecenia A^2 oraz A*A zwracają macierz, której każdy element jest kwadratem swojego odpowiednika z A, natomiast A%*%A zwraca iloczyn macierzy A i A
+A%*%A
+
+# f)
+# polecenia 1/A oraz A^(-1) zwracają macierz, której każdy element jest odwrotnością swojego odpowiednika z A, natomiast solve(A) zwraca odwrotność macierzy A
+solve(A)
+```
+
+### Zadanie 3 - ramki danych
+
+W analizie danych bardzo często wykorzystuje się ramki danych. Dlatego
+też przetestujemy poznane operacje na zbiorze danych mieszkania
+znajdującym się w bibliotece "Przewodnik". Ponieważ te dane nie są
+dostępne w podstawowej bibliotece, wymagana jest na początku jednorazowa
+instalacja komendą `install.packages("Przewodnik")`. Następnie,
+wystarczy załadować bibliotekę `library("Przewodnik")` oraz komendą
+`head(mieszkania)` możemy wyświetlić 6 pierwszych rekordów, aby zobaczyć
+co składa się na rozważany zbiór danych.
+
+Wykonaj poniższe operacje na zbiorze danych "mieszkania":
+
+1.  Wypisz pierwszy, trzeci i piąty wiersz ramki danych.
+
+2.  Wypisz pierwszy, trzeci i piąty wiersz oraz od 2 do 5 kolumny ramki
+    danych.
+
+3.  Wpisz polecenie `summary(mieszkania)`. Jaka jest średnia cena
+    mieszkań? Jaka jest maksymalna powierzchnia mieszkania z naszym
+    zbiorze danych? Ile jest mieszkań znajdujących się w wieżowcach?
+
+4.  Aby wypisać pierwszą kolumnę, jaką jest cena mieszkań możemy użyć:
+    `mieszkania[,1]` lub `mieszkania$cena` lub `mieszkania[, "cena"]`.
+    Znajdź jaka jest największa cena za mieszkanie w rozważanym zbiorze
+    danych, a następnie wyświetl wiersz zawierający maksymalną cenę.
+
+5.  Używając funkcji `order` posortuj dane ze względu na cenę.
+
+6.  Stwórz nową ramkę danych która zawiera tylko cenę, powierzchnię i
+    dzielnicę mieszkań, które mają powierzchnię większą niż 20.
+
+```{r}
+library("Przewodnik")
+# 1.)
+mieszkania[c(1,3,5),]
+
+# 2.)
+mieszkania[c(1,3,5),2:5]
+
+# 3.)
+summary(mieszkania)
+
+# 4.)
+max(mieszkania$cena)
+mieszkania[which.max(mieszkania$cena),]
+
+# 5.)
+mieszkania[order(mieszkania$cena),]
+
+# 6.)
+duze_mieszkania=mieszkania[which(mieszkania$powierzchnia>20), c(1,3,4)]
+duze_mieszkania
+```
+
+### Zadanie 4 - ramki danych
+
+Poniższa tabela przedstawia liczbę studentów przyjętych w pięciu
+miastach z podziałem na 5 typów kierunków: nauki humanistyczne, ścisłe,
+medyczne, sportowe i techniczne w 2006 roku:
+
+|          | n\. human. | n\. ścisłe | medyczne | sportowe | techniczne |
+|----------|------------|------------|----------|----------|------------|
+| Bordeaux | 12220      | 6596       | 7223     | 357      | 2239       |
+| Lyon     | 15310      | 6999       | 10921    | 395      | 3111       |
+| Paryż    | 112958     | 40244      | 46146    | 1247     | 7629       |
+| Rennes   | 8960       | 6170       | 4661     | 279      | 4013       |
+| Tuluza   | 12125      | 8233       | 6653     | 553      | 3178       |
+
+a.  Stworzyć ramkę danych zawierających dane z powyższej tabeli. W
+    szczególności należy uzupełnić nazwy kolumn i wierszy jak wyżej
+    (polecenia `names` i `row.names`). Dla ułatwienia, macierz danych
+    liczbowych można przekopiować z przykładu
+
+```{r}
+macierz_miast=matrix(c(12220,15310,112958,8960,12125,6596,6999,40244,6170,8233,7223,10921,46146,4661,6653,357,395,1247,279,553,2239,3111,7629,4013,3178),ncol=5)
+
+studenci=as.data.frame(macierz_miast)
+names(studenci)=c('Human','Ścisłe','Medyczne','Sportowe','Techniczne')
+row.names(studenci)=c('Bordeaux','Lyon','Paryż','Rennes', "Tuluza")
+studenci
+
+```
+
+b.  Obliczyć całkowita liczbę studentów w danym mieście, a następnie
+    uporządkować tabelę w porządku rosnącym względem tej liczby
+
+c.  Obliczyć całkowita liczbę studentów danego typu kierunków, a
+    następnie uporządkować tabelę w porządku rosnącym względem tej
+    liczby
+
+d.  Utworzyć nowa ramkę danych zawierającą tylko te miasta, gdzie liczba
+    przyjętych na kierunki ścisłe jest wyższa niż liczba przyjęć na
+    kierunki medyczne (jedno polecenie/jedna linijka)
+
+```{r}
+macierz_miast=matrix(c(12220,15310,112958,8960,12125,6596,6999,40244,6170,8233,7223,10921,46146,4661,6653,357,395,1247,279,553,2239,3111,7629,4013,3178),ncol=5)
+
+studenci=as.data.frame(macierz_miast)
+names(studenci)=c('Human','Ścisłe','Medyczne','Sportowe','Techniczne')
+row.names(studenci)=c('Bordeaux','Lyon','Paryż','Rennes', "Tuluza")
+
+# b)
+liczba_studentow_miasta=apply(studenci,1,sum)
+liczba_studentow_miasta
+x=order(liczba_studentow_miasta)
+st_miasta=studenci[x,]
+st_miasta
+
+# c)
+liczba_studentow_kier=apply(studenci,2,sum)
+liczba_studentow_kier
+x=order(liczba_studentow_kier)
+st_kier=studenci[,x]
+st_kier
+
+# d)
+studenci_2=studenci[which(studenci$Ścisłe>studenci$Medyczne),]
+studenci_2
+```
+
+### Zadanie 5 - metoda d'Honta
+
+Opis ćwiczeń w laboratorium 2
+
+#### Część 1
+
+```{r}
+partie=c("KO","PiS", "3Droga","Lewica", "Konfederacja")
+glosy =c(232799,232430,127693,83633,58435)
+l_mandatow=14
+
+dzielniki=seq(1,14, by=1)
+tabelka=matrix(0,nrow=l_mandatow, ncol=length(glosy))
+for (i in 1:length(glosy)){
+  for (j in 1:l_mandatow){
+    tabelka[j,i]=glosy[i]/j
+  }
+}
+
+dhondt_fr=as.data.frame(tabelka)
+row.names(dhondt_fr)=dzielniki
+names(dhondt_fr)=partie
+dhondt_fr
+```
+
+#### Część 2
+
+```{r}
+partie=c("KO","PiS", "3Droga","Lewica", "Konfederacja")
+glosy =c(232799,232430,127693,83633,58435)
+l_mandatow=14
+
+dzielniki=seq(1,l_mandatow, by=1)
+tabelka=matrix(0,nrow=l_mandatow, ncol=length(glosy))
+for (i in 1:length(glosy)){
+  for (j in 1:l_mandatow){
+    tabelka[j,i]=glosy[i]/j
+  }
+}
+
+dhondt_fr=as.data.frame(tabelka)
+row.names(dhondt_fr)=dzielniki
+names(dhondt_fr)=partie
+#tu kończy się część 1
+
+dhondt=cbind(seq(1,5*l_mandatow, by=1),stack(dhondt_fr))
+a=dhondt[,2]
+dhondt[,2]=dhondt[,3]
+dhondt[,3]=a
+names(dhondt)=c("","partia","ilorazy")
+dhondt=dhondt[order(dhondt$ilorazy, decreasing=TRUE),]
+dhondt=head(dhondt, n=l_mandatow)
+table(dhondt$partia)
+```
+
+#### Część 3 - dla danych z okręgu 23.
+
+```{r}
+partie=c("KO","PiS", "3Droga","Lewica", "Konfederacja")
+glosy =c(119259,347688,83676,32828,63854)
+l_mandatow=15
+
+dzielniki=seq(1,l_mandatow, by=1)
+tabelka=matrix(0,nrow=l_mandatow, ncol=length(glosy))
+for (i in 1:length(glosy)){
+  for (j in 1:l_mandatow){
+    tabelka[j,i]=glosy[i]/j
+  }
+}
+
+dhondt_fr=as.data.frame(tabelka)
+row.names(dhondt_fr)=dzielniki
+names(dhondt_fr)=partie
+
+dhondt=cbind(seq(1,5*l_mandatow, by=1),stack(dhondt_fr))
+a=dhondt[,2]
+dhondt[,2]=dhondt[,3]
+dhondt[,3]=a
+names(dhondt)=c("","partia","ilorazy")
+dhondt=dhondt[order(dhondt$ilorazy, decreasing=TRUE),]
+dhondt=head(dhondt, n=l_mandatow)
+table(dhondt$partia)
+```
+
+####  Zadanie dodatkowe 1
+
+```{r}
+partie=c("KO","PiS", "3Droga","Lewica", "Konfederacja")
+glosy =c(232799,232430,127693,83633,58435)
+l_mandatow=14
+
+dzielniki=seq(1,l_mandatow, by=1)
+tabelka=matrix(0,nrow=l_mandatow, ncol=length(glosy))
+for (i in 1:length(glosy)){
+  for (j in 1:l_mandatow){
+    tabelka[j,i]=glosy[i]/j
+  }
+}
+
+dhondt_fr=as.data.frame(tabelka)
+row.names(dhondt_fr)=dzielniki
+names(dhondt_fr)=partie
+
+dhondt=cbind(seq(1,5*l_mandatow, by=1),stack(dhondt_fr))
+a=dhondt[,2]
+dhondt[,2]=dhondt[,3]
+dhondt[,3]=a
+names(dhondt)=c("","partia","ilorazy")
+dhondt=dhondt[order(dhondt$ilorazy, decreasing=TRUE),]
+dhondt=head(dhondt, n=l_mandatow)
+d=table(dhondt$partia)
+koalicja1=d[1]+d[3]+d[4]
+koalicja2=d[2]+d[5]
+names(koalicja1)="KO+Lewica+3Droga"
+names(koalicja2)="PIS+Konfederacja"
+koalicja1
+koalicja2
+```
+
+#### Zadanie dodatkowe 2
+
+```{r}
+partie=c("KO","PiS", "3Droga","Lewica", "Konfederacja")
+glosy =c(232799,232430,127693,83633,58435)
+l_mandatow=14
+
+dzielniki=seq(1,l_mandatow, by=1)
+tabelka=matrix(0,nrow=l_mandatow, ncol=length(glosy))
+for (i in 1:length(glosy)){
+  for (j in 1:l_mandatow){
+    tabelka[j,i]=glosy[i]/(2*j-1)
+  }
+}
+
+saint_fr=as.data.frame(tabelka)
+row.names(saint_fr)=dzielniki
+names(saint_fr)=partie
+
+saint=cbind(seq(1,5*l_mandatow, by=1),stack(saint_fr))
+a=saint[,2]
+saint[,2]=saint[,3]
+saint[,3]=a
+names(saint)=c("","partia","ilorazy")
+saint=saint[order(saint$ilorazy, decreasing=TRUE),]
+saint=head(saint, n=l_mandatow)
+table(saint$partia)
+
+#porównanie wyników: w porównaniu do metody D'Hondta w metodzie Sainte-Laguë dodadtkowy mandat dostaje Lewica kosztem PiSu
+```
+
+### Zadanie 6 - zmienne jakościowe
+
+Kontynuując zadanie 3 z Laboratorium 2 i wykorzystując zbioru danych
+mieszkania:
+
+1.  Oblicz średnią cenę osobno dla każdej dzielnicy, używając funkcji
+    `tapply` oraz `mean`.
+
+2.  Wypisz wszystkie mieszkania dla których typ budynku to wieżowiec, a
+    następnie posortuj je ze względu na powierzchnię.
+
+```{r}
+library("Przewodnik")
+# 1)
+tapply(mieszkania$cena, mieszkania$dzielnica, mean)
+# 2)
+wiez=mieszkania[which(mieszkania$typ.budynku=="wiezowiec"),]
+wiez=wiez[order(wiez$powierzchnia, decreasing=TRUE),]
+wiez
+```
+
+### Zadanie 7 - listy
+
+Utworzyć 5-elementową listę zawierającą dowolne dwa miasta, jedno
+państwo, imię damskie i imię męskie, trzy zwierzęta oraz cyfrę, takie że
+miasto, państwo, imię, zwierze zaczynają się na tą samą literę co twoje
+imię a cyfra to suma cyfr twojego numeru indeksu. Nazwy elementów listy
+to "miasto", "państwo", "imię", "zwierze" oraz "cyfra".
+
+```{r}
+li=list(miasto=c("Tyczyn","Tarnobrzeg"), państwo="Tadżykistan", imię=c("Tomek","Tatiana"), zwierzę=c("tarczówka","trzewikodziób","tuńczyk"), cyfra="34")
+li
+```
+
+### Zadanie 8 - listy
+
+a.  Utworzyć (ponownie) macierz\
+    $\mathbf{A}=\left( \begin{array}{ccc} 2&23&8\\10&6&90\\4&7&12\end{array}\right)$\
+    za pomocą poleceń `cbind` i/lub `matrix`.
+
+b.  Obliczyć wartości własne i wektory własne macierzy. Czy macierz jest
+    diagonalizowalna?
+
+```{r}
+# a)
+a=cbind(c(2,10,4), c(23,6,7), c(8,90,12))
+a
+
+# b)
+res=eigen(a)
+res
+diag(res$values)
+#macierz Jordana macierzy A jest macierzą diagonalną, więc A jest diagonalizowalna
+```
+
+### Zadanie 9 - listy
+
+Załaduj listę, która zawiera różne typy danych.
+`data_list <- list(  numeryczny1 = c(10, 20, 30, 40, 50), numeryczny2 = c(10, 200, 34, 4, -50),  kategoryczny = c("tak", "nie", "tak", "nie", "tak"),  macierz = matrix(1:9, nrow=3))`
+Następnie, wykonaj następujące zadania:
+
+a.  Dla wektorów numerycznych oblicz medianę.
+
+b.  Dla zmiennych jakościowych oblicz liczbę wystąpień każdej kategorii.
+
+c.  Dla macierzy oblicz sumę każdego wiersza i każdej kolumny.
+
+```{r}
+data_list=list(numeryczny1 = c(10, 20, 30, 40, 50), numeryczny2 = c(10, 200, 34, 4, -50),  kategoryczny = c("tak", "nie", "tak", "nie", "tak"),  macierz = matrix(1:9, nrow=3))
+
+# a)
+lapply(data_list[1:2], median)
+
+# b)
+table(data_list$kategoryczny)
+
+# c)
+apply(data_list$macierz, 1, sum) #wiersze
+apply(data_list$macierz, 2, sum) #kolumny
+```
+
+### Zadanie 10 - listy
+
+Dla poniższej listy
+`datalist <- list(  zestaw1 = c(10, 20, 30, 40, 50),  zestaw2 = c(5, 15, 25, 35, 45),  zestaw3 = c(10, 10, 20, 20, 30))`
+używając funkcji `lapply` policz odchylenie standardowe oraz średnią dla
+każdego elementu z listy.
+
+```{r}
+datalist=list(  zestaw1 = c(10, 20, 30, 40, 50),  zestaw2 = c(5, 15, 25, 35, 45),  zestaw3 = c(10, 10, 20, 20, 30))
+
+lapply(datalist, sd)
+lapply(datalist, mean)
+```
