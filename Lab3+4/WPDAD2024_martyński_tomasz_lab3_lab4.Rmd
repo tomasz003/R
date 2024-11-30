@@ -1,0 +1,279 @@
+---
+title: "Zadania z laboratorium 3  i laboratorium 4"
+subtitle: "Wybrane pakiety do analizy danych 2024"
+author: "Martyński Tomasz"
+date: "2024-10-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# [Laboratorium 3]{style="color: red;"}
+
+Numeracja zadań jak w plikach z laboratoriami
+
+## Zadanie 1.1.1. - PESEL
+
+```{r}
+
+pesel_checking=function(pesel){
+  contr_numbers=c(1,3,7,9,1,3,7,9,1,3,0)
+
+  check=sum(pesel*contr_numbers)%%10
+
+  if (10-check!=pesel[11]){
+    print("Numer PESEL jest błędny")
+  }else{
+    print("Numer PESEL jest poprawny")
+    if (pesel[10]%%2==0){
+      print("Numer PESEL należy do kobiety")
+    }else{
+      print("Numer PESEL należy do mężczyzny")
+    }
+    rok=0
+    miesiac=0
+    if (pesel[3] %in% c(2,3)){
+      rok=2000
+      miesiac=-20
+    }else if (pesel[3] %in% c(0,1)){
+      rok=1900
+    }else{
+      print("Numer PESEL spoza zasięgu")
+    }
+    dzien=10*pesel[5]+pesel[6]
+    miesiac=miesiac+10*pesel[3]+pesel[4]
+    rok=rok+pesel[1]+pesel[2]
+    print(paste("Data urodzenia:", dzien, "-", miesiac, "-",rok))
+    
+    print(paste("Wiek:", 2024-rok))
+    }
+}
+
+pesel1=c(8,4,0,7,2,1,3,8,2,6,9)
+pesel2=c(0,1,2,6,3,0,3,7,5,3,8)
+pesel3=c(8,1,0,2,0,5,2,7,3,5,8)
+
+pesel_checking(pesel1)
+pesel_checking(pesel2)
+pesel_checking(pesel3)
+```
+
+## Zadanie 2.4.1. - silnia
+
+```{r}
+# a)
+silnia=function(n){
+  if(n<0 |as.integer(n)!=n){
+    return("Błędna wartość - wprowadź liczbę naturalną.")
+  }
+  if(n %in% c(0,1)){
+    return(1)
+  }else{
+    return(n*silnia(n-1))
+  }
+}
+
+silnia(10)
+
+# b)
+vec=seq(1,10,by=1)
+a=sapply(vec, factorial)
+a
+is.vector(a)
+
+# c)
+n=8
+k=4
+
+bin_newt=factorial(n)/(factorial(k)*factorial(n-k))
+bin_newt
+```
+
+## Zadanie 2.4.3. - pętle
+
+```{r}
+# a)
+x=runif(50,min=0,max=1)
+x
+
+# b)
+#for
+y1=rep(0,50)
+for (i in 1:50)
+  {
+  if(x[i]>=0.5){
+    y1[i]=1
+  } 
+}
+y1
+
+#while
+y2=rep(0,50)
+i=1
+while(i<51){
+  if(x[i]>=0.5){
+    y2[i]=1
+  }
+  i=i+1
+} 
+y2
+
+#repeat
+y3=rep(0,50)
+i=1
+repeat{
+  if(x[i]>=0.5){
+    y3[i]=1
+  }
+  i=i+1
+  if(i>50){
+    break
+  }
+} 
+y3
+
+```
+
+## Zadanie 3.8.1. - `funkcja_kwadratow()`
+
+```{r}
+funkcja_kwadratow=function(a=1,b=0,c=-1){
+  #miejsca zerowe:
+  x1=(-b-sqrt(b^2-4*a*c))/(2*a)
+  x2=(-b+sqrt(b^2-4*a*c))/(2*a)
+  
+  #ekstremum
+  x_m=-b/(2*a)
+  ekstr=a*x_m^2+b*x_m^2+c
+  
+  return(list(miejsca_zerowe=c(x1,x2), ekstremum=ekstr))
+}
+
+funkcja_kwadratow(1,8,15)
+```
+
+## Zadanie 3.8.2. - `BMI()`
+
+```{r}
+BMI=function(waga, wzrost){
+  ind_bmi=waga/wzrost^2
+  if(ind_bmi<18.5){
+    klasyfikacja="niedowaga"
+  }else if(ind_bmi<25){
+    klasyfikacja="optimum"
+  }else if(ind_bmi<30){
+    klasyfikacja="nadwaga"
+  }else{
+    klasyfikacja="otyłość"
+  }
+  
+  return (list(waga=waga, wzrost=wzrost, BMI=ind_bmi, klasyfikacja=klasyfikacja))
+}
+
+BMI(50, 1.5)
+BMI(70, 1.6)
+BMI(70,1.95)
+```
+
+## Zadanie 3.8.3. - `przestepny()`
+
+```{r}
+przestepny=function(A){
+  if (A%%4!=0){
+    return(paste("Rok",A,"nie jest przestępny"))
+  }else if(A%%100==0 & A%%400!=0){
+    return(paste("Rok",A,"nie jest przestępny")) 
+  }else{
+    return(paste("Rok",A,"jest przestępny")) 
+  }
+}
+przestepny(1901)
+przestepny(2004)
+przestepny(2100)
+przestepny(2000)
+```
+
+# [Laboratorium 4]{style="color: red;"}
+
+Numeracja zadań jak w plikach z laboratoriami
+
+## Zadanie 1.5.1. - wykres sinus
+
+```{r}
+# a)
+x=seq(0,10,0.1)
+y=sin(x)
+plot(x,y, type="l")
+
+#wspolny wykres dla b), c), d):
+# b)
+plot(x,y, type="l", main="Wykres funkcji sinus", xlab="Kąt", ylab="sinus", ylim=c(-1.5,1.5))
+
+# c)
+y2=x/(2*pi)
+lines(x,y2,col="red")
+
+# d)
+x3=c(0,1,2)
+y3=c(1.3,1,1)
+points(x3,y3,col="blue",pch="*")
+```
+
+## Zadanie 1.5.2. - grafika 2x2
+
+```{r}
+#zapisywanie w pliku
+jpeg('wykresy.jpg', width = 500, height=500, quality = 70)
+x=seq(0.1,10,by=0.01)
+
+par(mfrow=c(2,2), mar = 0.1+c(2,2,3,1))
+plot(x, cos(x), type="l", main="cos x")
+plot(x, sin(x), type="l", main="sin x")
+plot(x, exp(x), type="l", main="e^x")
+plot(x, log(x), type="l", main="ln x")
+
+dev.off()
+
+#tu jeszcze raz, żeby się wyświetliły też w pliku HTML:
+par(mfrow=c(2,2), mar = 0.1+c(2,2,3,1))
+plot(x, cos(x), type="l", main="cos x")
+plot(x, sin(x), type="l", main="sin x")
+plot(x, exp(x), type="l", main="e^x")
+plot(x, log(x), type="l", main="ln x")
+```
+
+## Zadanie 1.5.3. - wykres - 2 przykłady z wybranymi argumentami
+
+```{r}
+x=seq(1,10,by=0.01)
+y=x*x
+plot(x,y,type='l',col="red", main="Regular plot") 
+plot(x,y,type='l', col="blue", main='log="x"', log="x")
+plot(x,y,type='b',col="green", main='pch="/"', pch="/") 
+```
+
+## Zadanie 2.2.4. - tylko funkcja sprawdzająca oceny
+
+```{r}
+Student_performance_data=read.csv("C:/Users/asus/Downloads/Student_performance_data.csv")
+
+
+grade_counter=function(score){
+  return((score<3.5)+(score<3)+(score<2.5)+(score<2))
+}
+
+
+frame_check=function(list_of_students){
+  x=sapply(list_of_students$GPA,grade_counter)
+  y=list_of_students$GradeClass
+  match_log=c(x==y)
+  not_matches_list=list_of_students[!match_log,]$StudentID
+  error_num=length(match_log)-sum(match_log)
+  return(list(wrong_graded_students=not_matches_list, number_of_errors=error_num))
+}
+
+
+frame_check(Student_performance_data)
+```
