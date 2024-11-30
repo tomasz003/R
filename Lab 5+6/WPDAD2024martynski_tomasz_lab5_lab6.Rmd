@@ -1,0 +1,438 @@
+---
+title: "Zadania z laboratorium 5  i laboratorium 6"
+subtitle: "Wybrane pakiety do analizy danych 2024"
+author: "Martyński Tomasz"
+date: "2024-11-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# [Laboratorium 5]{style="color: red;"}
+
+Numeracja zadań jak w plikach z laboratoriami
+
+## Zadanie 2.5 - wykres 4 funkcji
+
+```{r}
+library(ggplot2)
+
+wart_x=seq(-pi,pi, by=0.1)
+wart_y1=sin(2*wart_x)
+wart_y2=1/4*(wart_x-1)*(wart_x+1)
+wart_y3=exp(-wart_x^2)
+wart_y4=atan(wart_x)
+
+df = data.frame(x=wart_x, y1=wart_y1, y2=wart_y2,y3=wart_y3,y4=wart_y4)
+
+ggplot(df, aes(x))+
+  geom_line(aes(y=y1,color="sinus", linetype="sinus"))+
+  geom_line(aes(y=y2, color="kwadratowa", linetype="kwadratowa"))+
+  geom_line(aes(y=y3, color="wykładnicza", linetype="wykładnicza"))+
+  geom_line(aes(y=y4, color="arctan", linetype="arctan"))+
+  scale_color_manual(name="Legenda",values = c("sinus" = "red", "kwadratowa" = "yellow4", "wykładnicza"="aquamarine1", "arctan"="blue"))+
+  scale_linetype_manual(name="Legenda",values = c("sinus" = 1, "kwadratowa" = 2, "wykładnicza"=5, "arctan"=6))+
+  labs(title="Wykres wybranych funkcji", 
+       x="x", 
+       y="y")
+```
+
+## Zadanie 3.1.1, - 4 jednomiany
+
+```{r}
+library(ggplot2)
+x=seq(0.01,5, length.out=1001)
+f1=x^2
+f2=3*x^2
+f3=x^3
+f4=0.1*x^3
+
+df = data.frame(x=x, y1=f1, y2=f2,y3=f3,y4=f4)
+
+rys=ggplot(df, aes(x))+
+  geom_line(aes(y=f1,color="x^2"))+
+  geom_line(aes(y=f2, color="3*x^2"))+
+  geom_line(aes(y=f3, color="x^3"))+
+  geom_line(aes(y=f4, color="0.1*x^3"))+
+  scale_color_manual(name="Legenda",values = c("x^2" = "red", "3*x^2" = "yellow4", "x^3"="aquamarine1", "0.1*x^3"="blue"))+
+  labs(x="x", y="y")
+rys
+rys+scale_x_log10()+scale_y_log10()
+
+#wykresy zmieniły kształt na proste, a potęgi przy x odpowiadają za współczynnik kierunkowy tych prostych - dlatego 0.1*x^3 i x^3 są równoległe oraz x^2 i 3*x^2 są równoległe
+```
+
+## Zadanie 4.1.1 - część a
+
+```{r}
+x=seq(-3.1,5.1, by =.01)
+y1=dnorm(x)
+y2=dnorm(x,sd=2)
+y3=dnorm(x,sd=1/2)
+y4=dnorm(x,mean=2)
+
+xx=as.data.frame(cbind(x,y1, y2, y3, y4))
+
+plottheme=theme(
+  axis.title=element_blank(),
+  axis.text.y=element_text(angle=90),
+  axis.text=element_text(size=15)
+)
+
+rys1=ggplot(xx)+
+  plottheme+
+  geom_line(aes(x,y1,color="N(0,1)"),size=2)+
+  geom_line(aes(x,y2,color="N(0,4)"),size=2)+
+  geom_line(aes(x,y3,color="N(0,1/4)"),size=2)+
+  geom_line(aes(x,y4,color="N(2,1)"),size=2)+
+  scale_color_manual(name="opis",
+                     breaks=c('N(0,1)', 'N(0,4)', 'N(0,1/4)', 'N(2,1)'),
+                     values=c('N(0,1)'='blue', 'N(0,4)'='red', 'N(0,1/4)'='green', 'N(2,1)'='orange'))
+rys1
+```
+
+## Zadanie 4.1.2 - część b
+
+```{r}
+plottheme1=plottheme+theme(
+  panel.grid.major=element_line(color="black", size=0.6),
+  panel.grid.minor=element_line(color="gray19", size=0.1),
+  panel.border=element_rect(color="black", fill=NA, size=1),
+  panel.background=element_rect(fill="white")
+)
+
+rys1+plottheme1
+```
+
+## Zadanie 4.1.3 - część c
+
+```{r}
+plottheme2=plottheme1+theme(
+  legend.title=element_text(size=20),
+  legend.text=element_text(size=10),
+  legend.title.align=0.5,
+  legend.position=c(0.85, 0.66),
+  legend.background=element_rect(fill="beige", color="black", size=1),
+  legend.key=element_rect(fill="beige")
+)
+
+rys1+plottheme2
+```
+
+## Zadanie 4.2 - wykresy
+
+```{r}
+library(ggplot2)
+library(readxl)
+Students_performance=read_excel("C:/Users/asus/Desktop/Students_performance.xlsx")
+
+Students_performance$Gender=as.factor(Students_performance$Gender)
+Students_performance$Ethnicity=as.factor(Students_performance$Ethnicity)
+Students_performance$ParentalEducation=as.factor(Students_performance$ParentalEducation)
+Students_performance$Tutoring=as.factor(Students_performance$Tutoring)
+Students_performance$ParentalSupport=as.factor(Students_performance$ParentalSupport)
+Students_performance$Extracurricular=as.factor(Students_performance$Extracurricular)
+Students_performance$Sports=as.factor(Students_performance$Sports)
+Students_performance$Music=as.factor(Students_performance$Music)
+Students_performance$Volunteering=as.factor(Students_performance$Volunteering)
+
+#Wykres nr 1:
+ggplot(Students_performance, aes(x=StudyTimeWeekly,y=GPA))+
+  geom_point()+
+  labs(x="StudyTimeWeekly", y="GPA", title="Zależność GPA od StudyTimeWeekly")
+
+#Wykres nr 2:
+ggplot(Students_performance, aes(x=StudyTimeWeekly, y=GPA, color=ParentalSupport, shape=Gender))+
+  geom_point()+
+  labs(x="StudyTimeWeekly", y="GPA", color="Parental Support", shape="Gender", title="Zależność GPA od StudyTimeWeekly z podziałem")
+
+#Wykres nr 3:
+
+shortened_labels=labeller(ParentalEducation=function(x) paste("P.Edu:", x),
+                          Ethnicity=function(x) paste("Ethnicity:", x))
+
+ggplot(Students_performance, aes(x=StudyTimeWeekly, y=GPA, color=ParentalSupport, shape=Gender))+
+  geom_point()+
+  labs(x="StudyTimeWeekly", y="GPA", color="Parental Support", shape="Gender", title="Zależność GPA od StudyTimeWeekly")+
+  facet_grid(ParentalEducation ~ Ethnicity, labeller=shortened_labels)
+
+#Wykres nr 4:
+ggplot(Students_performance, aes(y=StudyTimeWeekly))+
+  geom_boxplot()+
+  labs(title="Wykres boxplot zmiennej StudyTimeWeekly")+
+  theme(axis.text.x = element_blank()) #ta linijka usuwa oś x, chyba bez sensu wklejać tu dwa wykresy, jeden z osią i drugi bez
+
+
+#Trzy wykresy boxplotowe:
+ggplot(Students_performance, aes(x=Ethnicity, y=GPA, color=Ethnicity))+
+  geom_boxplot()+
+  labs(title="Wykres boxplot GPA w zależności od Ethnicity")
+
+ggplot(Students_performance, aes(x=ParentalEducation, y=GPA, color=ParentalEducation))+
+  geom_boxplot()+
+  labs(title="Wykres boxplot GPA w zależności od Parental Education")
+
+ggplot(Students_performance, aes(x=ParentalSupport, y=GPA, color=ParentalSupport))+
+  geom_boxplot()+
+  labs(title="Wykres boxplot GPA w zależności od GPA")
+
+#Wnioski: o ile nie widać żadnej zależności między Ehtnicity i GPA oraz między ParentalEducation i GPA, o tyle widać dodatnią korelację między ParentalSupport i GPA
+
+#Ostatni wykres:
+ggplot(Students_performance, aes(x=Gender, y=StudyTimeWeekly, color=Gender))+
+  geom_boxplot()+
+  facet_grid(~Ethnicity, labeller=label_both)+
+  labs(title="Wykres boxplot GPA w zależności od StudyTimeWeekly z podziałem")
+```
+
+# [Laboratorium 6]{style="color: red;"}
+
+Numeracja zadań jak w plikach z laboratoriami
+
+## Zadanie 2.3.1 - zmienne jakościowe + wykresy
+
+```{r}
+set.seed(416797)
+
+dane_j=data.frame(
+  Płeć=as.factor(sample(c("Mężczyzna", "Kobieta"), 100, replace = TRUE)),
+  Rok=as.numeric(sample(c("1", "2", "3", "4"), 100, replace = TRUE)),
+  Matematyka=as.factor(sample(c("Lubi M", "Nie lubi M"), 100, replace = TRUE)),
+  Programowanie=as.factor(sample(c("Lubi Pr", "Nie lubi Pr"), 100, replace = TRUE)),
+  Sztuka=as.factor(sample(c("Lubi Sz", "Nie lubi Sz"), 100, replace = TRUE))
+)
+
+#a)
+tab1=table(dane_j$Programowanie)
+tab1
+prop.table(tab1)
+tab2=table(dane_j$Sztuka)
+tab2
+prop.table(tab2)
+
+#b)
+barplot(tab1, main="Preferencje dotyczące programowania", xlab="Preferencja", ylab="Liczba Studentów", col=c("green", "blue"))
+
+pie(tab1, main="Preferencje dotyczące programowania", col=c("green", "blue"), labels=tab1)
+
+barplot(tab2, main="Preferencje dotyczące sztuki", xlab="Preferencja", ylab="Liczba Studentów", col=c("salmon", "lightblue"))
+
+pie(tab2, main="Preferencje dotyczące Sztuki", col=c("salmon", "lightblue"), labels=tab2)
+
+#c
+tab3=table(dane_j$Płeć, dane_j$Programowanie)
+tab3
+prop.table(tab3)
+
+tab4=table(dane_j$Płeć, dane_j$Sztuka)
+tab4
+prop.table(tab4)
+
+#d)
+mosaicplot(~dane_j$Płeć+dane_j$Programowanie, main="Płeć vs preferencje dotyczące programowania", xlab="Płeć", ylab="Preferencje dot. programowania", col=c("green", "blue"))
+
+mosaicplot(~dane_j$Płeć+dane_j$Sztuka, main="Płeć vs preferencje dotyczące sztuki", xlab="Płeć", ylab="Preferencje dot. sztuki", col=c("salmon", "lightblue"))
+```
+
+## Zadanie 2.3.2. - wykresy w `ggplot2`
+
+```{r}
+library(ggplot2)
+#Programowanie:
+ggplot(dane_j, aes(x = Programowanie, fill=Programowanie)) +
+  geom_bar()+
+  labs(title="Preferencje dotyczące programowania", x="Preferencja", y="Liczba Studentów")+
+  scale_fill_manual(values=c("green", "blue"))
+
+ggplot(dane_j, aes(x="", y="", fill=Programowanie))+
+  geom_bar(stat="identity",width = 1) +
+  coord_polar("y")+
+  labs(title = "Proporcje dotyczące programowania")+
+    scale_fill_manual(values=c("green", "blue"))
+
+
+#Sztuka:
+ggplot(dane_j, aes(x = Sztuka, fill=Sztuka)) +
+  geom_bar()+
+  labs(title="Preferencje dotyczące sztuki", x="Preferencja", y="Liczba Studentów")+
+  scale_fill_manual(values=c("salmon", "lightblue"))
+
+ggplot(dane_j, aes(x="", y="", fill=Sztuka))+
+  geom_bar(stat="identity",width = 1) +
+  coord_polar("y")+
+  labs(title = "Proporcje dotyczące sztuki")+
+    scale_fill_manual(values=c("salmon", "lightblue"))
+
+
+#Płeć vs preferencje dotyczące programowania
+ggplot(dane_j, aes(x=Programowanie, fill=Płeć)) +
+  geom_bar(position="fill") +
+  scale_fill_manual(values = c("pink4", "darkblue")) +
+  labs(title="Płeć vs preferencje dotyczące programowania", x="Płeć", y = "Preferencje dot. programowania") 
+
+#Płeć vs preferencje dotyczące sztuki
+ggplot(dane_j, aes(x=Sztuka, fill=Płeć)) +
+  geom_bar(position="fill") +
+  scale_fill_manual(values = c("pink4", "darkblue")) +
+  labs(title="Płeć vs preferencje dotyczące sztuki", x="Płeć", y = "Preferencje dot. sztuki") 
+```
+
+## Zadanie 3.1.6 - wykresy dla danych jakościowych
+
+```{r}
+library(ggplot2)
+data("diamonds")
+
+srednia=mean(diamonds$price)
+mediana=median(diamonds$price)
+
+#Wykres 1
+hist(diamonds$price, breaks=30, main="Histogram ceny", xlab="Cena", ylab="Częstość występowań", probability = TRUE, xlim=c(0,20000), ylim=c(0, 0.0005))
+abline(v=srednia, col="red")
+abline(v=mediana, col="green")
+lines(density(diamonds$price))
+legend("right", legend=c("Srednia", "Mediana"), col=c("red", "green"), lwd=c(1,1))
+
+#Wykres 2
+ggplot(diamonds, aes(x=price, y=..density..)) +
+  geom_histogram(bins=30, fill="lightblue", color ="black") +
+  geom_density(color = "blue", size=1)+
+  geom_vline(aes(xintercept=srednia, color="Średnia"), linetype="dashed", size=1)+
+  geom_vline(aes(xintercept=mediana, color="Mediana"), linetype="dashed", size=1)+
+  labs(title="Histogram ceny", x="Cena", y ="Gęstość")+
+  scale_color_manual(name="Wartości", values=c("Średnia" = "red", "Mediana" = "blue"))
+
+#Wykres 3
+library(car)
+scatterplot(diamonds$price ~ diamonds$carat, xlab="Karat", ylab="Cena")
+
+#Wykres 4
+boxplot(diamonds$price~diamonds$cut, xlab="Szlif", ylab="Cena")
+
+#Wykres 5
+plot(ecdf(diamonds$price), main="Dystrybuanta empiryczna ceny")
+```
+
+## Zadanie 4.2 - brakujące dane
+
+```{r}
+library("Przewodnik")
+library(Hmisc)
+true_mean=mean(mieszkania$cena)
+true_median=median(mieszkania$cena)
+hist(mieszkania$cena)
+
+cena_z_brakami=mieszkania$cena
+brakujace_wartosc=c(1,2,3,50, 60, 80, 100,105, 110, 120, 180, 181,188, 190, 195,196, 197, 198, 199, 200)
+cena_z_brakami[brakujace_wartosc]=NA
+
+
+#usunięcie danych, w których występują braki
+cena_usuw=na.omit(cena_z_brakami)
+blad_sr_usuw=abs(true_mean-mean(cena_usuw))
+blad_med_usuw=abs(true_median-median(cena_usuw))
+
+print(paste("Błąd bezwzględny dla usuwania wynosi: dla średniej", blad_sr_usuw, ", dla mediany", blad_med_usuw))
+
+#zastąpienie brakujących danych medianą pozostałych danych
+cena_zast_med=impute(cena_z_brakami, fun=median)
+blad_sr_zast_med=abs(true_mean-mean(cena_zast_med))
+blad_med_zast_med=abs(true_median-median(cena_zast_med))
+
+print(paste("Błąd bezwzględny dla zastąpienia brakujących danych medianą wynosi: dla średniej", blad_sr_zast_med, ", dla mediany", blad_med_zast_med))
+
+#zastąpienie brakujących danych średnią pozostałych danych
+cena_zast_sr=impute(cena_z_brakami, fun=mean)
+blad_sr_zast_sr=abs(true_mean-mean(cena_zast_sr))
+blad_med_zast_sr=abs(true_median-median(cena_zast_sr))
+
+print(paste("Błąd bezwzględny dla zastąpienia brakujących danych średnią wynosi: dla średniej", blad_sr_zast_sr, ", dla mediany", blad_med_zast_sr))
+
+
+#Wnioski: najlepsze rezultaty otrzymaliśmy, gdy zastąpiliśmy brakujące dane średnią. Największy błąd wygenerowało zastąpienie ich medianą pozostałych, zwłaszcza w przypadku sprawdzania średniej, gdzie błąd wyszedł prawie 2x większy
+```
+
+## Zadanie 6. - wstępna analiza danych
+
+```{r}
+dane=read.csv("C:/Users/asus/Desktop/dane7.csv")
+
+#a)
+#Jest to baza danych na podstawie badania S. Quine z 1975 roku, które sprawdza zależność między płcią, rasą, rodzajem szkoły i tym, jak dobre jest dziecko w nauce, a liczbą opuszczonych przez nie dni (response variable). Zawiera ona 154 obserwacje.
+
+#b)
+#zmienne ilościowe: liczba opuszczonych dni(absent)
+#zmienne jakościowe: rasa (race), płeć (sex), rodzaj szkoły (school), prędkość nauki dziecka (learner)
+
+dane$race=as.factor(dane$race)
+dane$sex=as.factor(dane$sex)
+dane$school=as.factor(dane$school)
+dane$learner=as.factor(dane$learner)
+
+sum(is.na(dane)) #dane są kompletne, nie ma braków
+
+#c)
+tr1=table(dane$race, dane$sex)
+tr1
+prop.table(tr1)
+prop.table(table(dane$school))
+
+
+ggplot(dane, aes(x="", y="", fill=race))+
+  geom_bar(stat="identity",width = 1) +
+  coord_polar("y")+
+  labs(title = "Rasa ankietowanych")+
+  scale_fill_manual(values=c("brown", "beige"))
+
+mosaicplot(~race+learner, dane, col=c("green", "red4"), main="Zależność pr. nauki od rasy")
+
+ggplot(dane, aes(x="", y="", fill=sex))+
+  geom_bar(stat="identity",width = 1) +
+  coord_polar("y")+
+  labs(title = "Płeć ankietowanych")+
+  scale_fill_manual(values=c("salmon", "lightblue"))
+
+mosaicplot(~sex+learner, dane, col=c("green", "red4"), main="Zależność pr. nauki od płci")
+
+library(car)
+boxplot(dane$absent ~ dane$learner)
+#Wnioski są na końcu
+
+#d)
+library(RVAideMemoire)
+library(moments)
+
+med_abs=median(dane$absent)
+sr_abs=mean(dane$absent)
+mod_abs=mod(dane$absent)
+odch_st=sd(dane$absent)
+war=var(dane$absent)
+skosnosc=skewness(dane$absent)
+kur=kurtosis(dane$absent)
+
+list(mediana=med_abs, średnia=sr_abs, moda=mod_abs, odchylenie_standardowe=odch_st, wariancja=war, skośność=skosnosc, kurtoza=kur)
+
+hist(dane$absent, breaks=30, main="Histogram opuszczonych dni", probability = TRUE)
+abline(v=sr_abs, col="red")
+abline(v=med_abs, col="blue")
+abline(v=mod_abs, col="green")
+lines(density(dane$absent))
+legend("right", legend=c("Średnia", "Mediana", "Moda"), col=c("red", "blue", "green"), lwd=c(1,1))
+
+```
+
+Wnioski na podstawie tabelek i wykresów(c):\
+- w bazie danych jest równowaga wpisów pod względem płci i rasy, natomiast pod względem poziomu szkoły odstają zmienne F0 (b. mało wpisów) i F1 (b. dużo wpisów)\
+- nie możemy zaobserwować żadnej zależności między rasą a prędkością nauki, natomiast istnieje zależność między płcią i prędkością nauki (średnio większy procent kobiet jest "slow learner")\
+- co ciekawe, "average learners" opuszczają średnio więcej dni, niż ich "slow" koledzy i koleżanki\
+- uczniowie na ogół nie opuszczają za wielu dni (mediana wynosi 11); średnia (ok. 16,1) jest zawyżona zapewne przez pojedyczne osoby z nieobecnoscią na poziomie \>50; na temat histogramu rozpiszę się poniżej.\
+\
+Należy mieć na uwadze, że to mały zbiór danych (154 wpisów), i o ile daje jakiś obraz sytuacji, o tyle absolutnie należy uważać z generalizacjami typu "kobiety uczą się średnio gorzej niż mężczyźni".
+
+Wnioski z histogramu (d):\
+-średnia jest większa niż moda czy mediana przez skrajne wartości odstające; wszystkie średnie pokazują jednak, że uczniowie opuszczają "średnio" kilkanaście dni szkoły\
+-wariancja jest duża, a więc obserwacje znajdują się szeroko wokół centrum (istnieją wspomniane wyżej wartości odstające, natomiast jest ich mało (kurtoza\>0))\
+-skośność jest dodatnia, a więc rozkład jest prawoskośny\
+-kurtoza jest dodatnia, i to znacznie, a więc ogony rozkładu nie są ciężkie i większość danych znajduje się w centrum
