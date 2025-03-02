@@ -1,0 +1,355 @@
+---
+title: "Projekt zaliczeniowy"
+subtitle: "Wybrane pakiety do analizy danych 2024"
+author: "Martyński Tomasz, 416797"
+date: "03-01-2025"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# [Wybór i opis zbioru danych]{style="color: blue;"}
+
+Dostępnych jest 10 zbiorów danych. Do opracowania należy wybrać ten, którego numer jest równy **ostatniej cyfrze numeru indeksu**
+
+Zbiór danych zawiera następujące informacje o studentach:
+
+1.  Numer_indeksu: unikalny numer indeksu studenta (liczba sześciocyfrowa).
+
+2.  Płeć: Płeć studenta, tj. "Kobieta" lub "Mężczyzna".
+
+3.  Kierunek_studiów: kierunek, na którym studiuje student. Możliwe kierunki to: "Informatyka", "Ekonomia", "Psychologia", "Biologia".
+
+4.  Wiek: wiek studenta.
+
+5.  Czas_nauki: ilość godzin nauki tygodniowo.
+
+6.  Średnia_ocen: średnia ocen studenta.
+
+# [Przygotowanie danych]{style="color: red;"}
+
+## Zadania
+
+-   Załaduj dane (kod, bez kreatora) i przekształć zmienne jakościowe na typ `factor`.
+
+-   Wyświetl podsumowanie danych. Na podstawie tego określ, które zmienne są jakościowe, a które ilościowe.
+
+## Rozwiązania
+
+```{r}
+library(readxl)
+data=read_excel("C:/Users/asus/Desktop/Programowanie/R/pRojekt/preferencje_studentow_z_srednia_ocen7.xlsx")
+
+data$Numer_indeksu=as.factor(data$Numer_indeksu)
+data$Płeć=as.factor(data$Płeć)
+data$Kierunek_studiów=as.factor(data$Kierunek_studiów)
+summary(data)
+```
+
+Zmienne jakościowe: Numer_indeksu, Płeć, Kierunek_studiów
+
+Zmienne ilościowe: Wiek, Czas_nauki, Średnia_ocen
+
+# [Obsługa brakujących danych]{style="color: green;"}
+
+## Zadania
+
+Sprawdź, czy w zestawie danych występują wartości `NA`. Jeśli tak:
+
+-   Dla zmiennych jakościowych zastąp brakujące wartości najczęściej występującą kategorią.
+
+-   Dla zmiennych ilościowych zastąp brakujące wartości średnią. Pamiętaj, aby dla zmiennej "wiek" średnia była zaokrąglona do pełnych wartości.
+
+## Rozwiązania
+
+```{r}
+colSums(is.na(data)) #w każdej kolumnie poza "Numer_indeksu" są wartości NA
+
+library(Hmisc)
+#zmienne jakościowe:
+data$Płeć=impute(data$Płeć, fun=mean)
+data$Kierunek_studiów=impute(data$Kierunek_studiów, fun=mean)
+
+#zmienne ilościowe:
+data$Wiek=round(impute(data$Wiek, fun=mean))
+data$Czas_nauki=impute(data$Czas_nauki, fun=mean)
+data$Średnia_ocen=impute(data$Średnia_ocen, fun=mean)
+
+
+colSums(is.na(data)) #sprawdzam, czy nadal są wartości NA (nie ma :3)
+summary(data)
+```
+
+# [Funkcja wyznaczająca kwotę stypendium]{style="color: blue;"}
+
+## Zadania
+
+Napisz funkcję, która na podstawie średniej określi, czy danej osobie należy się stypendium, a jeśli tak, to w jakiej wysokości.
+
+Progi otrzymania stypendium:
+
+-   jeżeli średnia ≥ 4.5, to stypendium wynosi 750 zł,
+
+-   jeżeli średnia ≥ 4.7, to stypendium wynosi 850 zł,
+
+-   jeżeli średnia ≥ 4.9, to stypendium wynosi 950 zł.
+
+Argumentem funkcji powinna być ramka danych.
+
+Funkcja powinna zwrócić listę (lista - jako obiekt w R) złożoną z 3 elementów:
+
+-   liczby przyznanych stypendiów,
+
+-   macierzy/ramki danych z numerami indeksów stypendystów wraz z wyliczonymi kwotami,
+
+-   miesięcznego kosztu stypendium (sumy wszystkich przyznanych stypendiów).
+
+## Rozwiązania
+
+```{r}
+
+kwota_styp=function(srednia){
+  return (750*(srednia>=4.5)+100*(srednia>=4.7)+100*(srednia>=4.9))
+}
+
+stypendia=function(frame){
+wart=kwota_styp(frame$Średnia_ocen) #wartosc, jaka dostanie kazdy student
+indeksy_stypendystów=which(wart!=0) #indeksy stypendystow (stypednium >0)
+
+kto=frame$Numer_indeksu[indeksy_stypendystów] #nr-y indeksu stypendystow
+ile=wart[wart!=0] #wysokosc kwot pryznanej stypendystom
+df=data.frame(NrIndeksu=kto, WartoscPLN=ile)
+
+final_l=list(
+  liczba_stypendystow=sum(wart!=0),
+  ramka=df,
+  laczna_wartosc_stypendiów=sum(wart)
+)
+  return (final_l)
+}
+
+stypendia(data)
+```
+
+# [Wykres słupkowy dla kierunku studiów i płci]{style="color: red;"}
+
+## Zadania
+
+-   Używając biblioteki ggplot, stwórz wykres słupkowy (pionowe słupki) porównujący kierunek studiów z płcią. Wykres powinien mieć odpowiednio podpisane osie, tytuł, legendę oraz zmienione kolory słupków i tła.
+
+-   Na podstawie otrzymanego wykresu, opisz, jakie wnioski można wyciągnąć na temat zależności między płcią a kierunkiem studiów w zbiorze danych.
+
+## Rozwiązania
+
+```{r}
+library(ggplot2)
+
+ggplot(data, aes(x=Kierunek_studiów, fill=Płeć))+
+  geom_bar(position="fill")+
+  labs(title="Kierunek studiów a płeć", x="Kierunek studiów", y="Płeć")+
+  scale_fill_manual(values=c("pink3", "lightblue3"))+
+  theme(
+    panel.background = element_rect(fill="beige"),
+    panel.grid.major = element_line(color="gray8"),
+    panel.grid.minor = element_line(color="gray8")
+  )
+ 
+```
+
+Wnioski: w naszej próbce danych wszystkie kierunki są lekko zdominowane przez mężczyzn, ale - co ciekawe - największy odsetek kobiet występuje na Informatyce, a najmniejszy - na Psychologii.
+
+Brakuje mocnej zależności między płcią a kierunkiem typu "jak mężczyzna, to pewnie na Biologii" - wszystkie kierunki mają między około 60% a 75% mężczyzn, brak kierunku skrajnie inaczej podzielonego pod tym względem. Warto dodać, że na wszystkich kierunkach mamy podobną liczbę ludzi, tzn. między 117 a 138, a więc i pod tym względem kierunki są porównywalne.
+
+# [Histogram dla średniej ocen]{style="color: green;"}
+
+## Zadania
+
+-   Stwórz histogram dla średniej ocen, dodając linię reprezentującą jądrowy estymator gęstości oraz przerywane linie oznaczające średnią, modę i medianę. Oznacz osie, nadaj tytuł, zmień kolory histogramu oraz linii i dodaj legendę (legendy powinny uwzględniać styl linii, np. przerywana linia w legendzie odpowiada przerywanej linii na wykresie).
+
+-   Określ charakterystykę rozkładu: modalność, skośność i symetryczność.
+
+## Rozwiązania
+
+```{r}
+moda=function(dane){
+  wystapienia=table(dane)
+  mod=as.numeric(names(wystapienia)[which.max(wystapienia)])
+  return (mod)
+}
+
+
+ggplot(data, aes(x=Średnia_ocen, y=..density..)) +
+  geom_histogram(bins=40, fill="lightblue", color ="black") +
+  geom_density(color = "red", size=0.75)+
+  geom_vline(aes(xintercept=mean(Średnia_ocen), color="Średnia"), linetype="solid", size=1)+
+  geom_vline(aes(xintercept=median(Średnia_ocen), color="Mediana"), linetype="dotdash", size=1)+
+  geom_vline(aes(xintercept=moda(Średnia_ocen), color="Moda"), linetype="dotted", size=1)+
+  labs(title="Średnia ocen", x="Ocena", y ="Gęstość")+
+  scale_color_manual(name="Wartości", values=c("Średnia" = "green", "Mediana" = "blue", "Moda"="purple"))
+
+library(moments)
+skewness(data$Średnia_ocen)
+median(data$Średnia_ocen)
+kurtosis(data$Średnia_ocen)
+```
+
+Charakterystyka rozkładu:
+
+-   modalność: rozkład jest unimodalny (nie wiem, jak interpretować to, że koncentruje się on wokół 3,59, natomiast jego moda jest równa 5 - normalnie bym powiedział, że jest unimodalny, ale czy moda w 5 sprawia, że jest bimodalny?)
+
+-   skośność - bliska 0, symetryczny rozkład
+
+-   kurtoza - około 2,5, a więc trochę mniejsza niż rozkładu normalnego, ale nadal oznaczająca koncentrację gęstości w środku i lżejsze ogony (poza tą feralną modą równą 5...)
+
+# [Wykresy pudełkowe dla czasu nauki a kierunek studiów]{style="color: blue;"}
+
+## Zadania
+
+-   Przy użyciu ggplot, narysuj wykresy pudełkowe dla czasu nauki w podziale na kierunek studiów. Wykres powinien mieć podpisane osie, tytuł oraz zmienione kolory.
+
+-   Na podstawie wykresu określ, czy rozkłady czasu nauki różnią się w zależności od kierunku. Który kierunek wymaga średnio najwięcej czasu, a który najmniej? Który kierunek charakteryzuje się największą wariancją? Czy są widoczne wartości odstające i jak je zidentyfikować?
+
+## Rozwiązania
+
+```{r}
+ggplot(data, aes(x=Kierunek_studiów, y=Czas_nauki, color=Kierunek_studiów))+
+  geom_boxplot()+
+  labs(x="Kierunek studiów", y="Czas nauki", title="Wykres czasu nauki w zależności od kierunku studiów")
+```
+
+Tak, rozkład czasu różni się w zależności od kierunku - średnio najdłużej uczą się studenci Biologii, a najkrócej studenci Informatyki. Ekonomia charakteryzuje się największą wariancją (to sugeruje największa szerokość pudełka, który sięga od 1. do 3. kwartylu). Wartości odstające obswerujemy dla Ekonomii i Psychologii - są to kropki nad wąsami wykresu.
+
+# [Analiza rozkładu czasu nauki dla najliczniejszego kierunku studiów]{style="color: red;"}
+
+## Zadania
+
+-   Wybierz czas nauki dla najliczniejszego kierunku studiów. Przeprowadź analizę rozkładu: przetestuj i porównaj dwa lub trzy różne rozkłady, wyestymuj ich parametry i oceń dopasowanie.
+
+Rodziny rozkładów: wykładniczy `exp`, logarytmiczno-normalny `lnorm`, gamma `gamma`, normalny `norm`, t-Studenta `t`, Weibulla `weibull`, beta `beta`, jednostajny `unif`
+
+## Rozwiązania
+
+```{r}
+summary(data$Kierunek_studiów) #widzimy, że najwięcej jest studentów ekonomii, nawet bez tych 10, których przypisaliśmy w ramach uzupełniania NA
+
+dane=c(data[which(data$Kierunek_studiów=="Ekonomia"),]$Czas_nauki)
+
+library(fitdistrplus)
+hist(dane, breaks=30, main="Czas nauki studentów ekonomii", probability = TRUE)
+
+#rozkład normalny
+fit_norm=fitdist(dane, "norm")
+plot(fit_norm)
+
+#rozkład wykładniczy
+fit_exp=fitdist(dane, "exp")
+plot(fit_exp)
+print(fit_exp)
+
+#rokzład Weibulla
+fit_weibull=fitdist(dane, "weibull")
+plot(fit_weibull)
+print(fit_weibull)
+
+results=gofstat(list(fit_norm, fit_exp, fit_weibull), fitnames = c("Normalny", "Wykładniczy", "Weibulla"))
+print(results)
+```
+
+Spośród sprawdzonych przeze mnie rozkładów (normalny, wykładniczy, Weibulla) najlepiej dopasowany jest ten ostatni, na co wskazują najmniejsze wartości statystyk oraz AIC i BIC. Rozkład normalny przybliża nasze dane lepiej niż rozkład wykładniczy.
+
+Estymacja parametrów:
+
+```{r}
+print(fit_weibull)
+print(fit_exp)
+print(fit_norm)
+```
+
+-   Weibull: k=1,901112, lambda=5,191254 \<- nasz najbardziej pasujący rozkład
+
+-   wykładniczy: lambda=0.2174775
+
+-   normalny: m=4,598176, sigma=2,536369\
+
+# [Wykres zależności średniej ocen od czasu nauki dla kierunku "Biologia".]{style="color: green;"}
+
+## Zadania
+
+-   Stwórz wykres punktowy, przedstawiający zależność średniej ocen od czasu nauki dla kierunku "Biologia". Wykres powinien mieć podpisane osie, tytuł, zmienione kolory oraz legendę.
+
+-   Na podstawie wykresu określ, jaki rodzaj zależności występuje między zmiennymi. Oblicz korelację między średnią ocen a czasem nauki. Sprawdź założenia regresji liniowej, wyestymuj współczynniki prostej regresji i dodaj ją na wykres. Przeprowadź również diagnostykę modelu za pomocą odpowiednich wykresów.
+
+## Rozwiązania
+
+```{r}
+dane_b=data[which(data$Kierunek_studiów=="Biologia"),]
+dane_b$Wiek=as.factor(dane_b$Wiek)
+
+rys=ggplot(dane_b, aes(x=Czas_nauki, y=Średnia_ocen, color=Wiek, shape=Płeć))+
+  geom_point()+
+  labs(x="Czas nauki", y="Średnia ocen", color="Wiek", shape="Płeć", title="Zależność średniej ocen od czasu nauki (Biologia)") 
+rys
+
+#korelacja
+cor(dane_b$Średnia_ocen, dane_b$Czas_nauki)
+
+model=lm(Średnia_ocen~Czas_nauki, data=dane_b)
+```
+
+Sprawdzamy, czy nasz model spełnia założenia regresji liniowej:
+
+-   niewielka p-value - rzędu 10\^(-7) - a więc zależność jest liniowa:
+
+    ```{r}
+    summary(model)
+    ```
+
+-   niezależność obserwacji - jedna obserwacja jest oczywiście niezależna, bo nie jest jednostajna
+
+-   testowanie homoskedantyczności - test Breusch-Pagana: p-value jest wielkości prawie 40%, dużo większa niż 0.05, a więc nie odrzucamy hipotezy zerowej - wariacja jest jednorodna
+
+    ```{r}
+    library(lmtest)
+    bptest(model)
+    ```
+
+-   niezależność reszt - bardzo wysoka p-value, dużo większa niż 0.05, a więc reszty są niezależne
+
+    ```{r}
+    library("car")
+    durbinWatsonTest(model)
+    ```
+
+-   rozkład normalny reszt - test Shapiro-Wilka - p-value jest zdecydowanie większa niż 0.05, a więc reszty mają rozkład normalny
+
+    ```{r}
+    shapiro.test(model$residuals)
+    ```
+
+    Wniosek - model spełnia założenia modelu liniowego.
+
+```{r}
+model$coeff
+
+rys=rys+geom_abline(intercept=2.6307425, slope=0.2239684, col="blue", size=1.5)
+rys
+
+par(mfrow=c(2,2))
+plot(model)
+```
+
+Rodzaj zależności między zmiennymi - średnio większy czas nauki przynosi średnio lepszą średnią ocen (dodatni współczynnik "slope").
+
+Na podstawie wykresów możemy stwierdzić, że model spełnia założenia modelu liniowego:
+
+-   na wykresie Residuals vs Fitted czerwona krzywa jest bliska 0
+
+-   na wykresie Q-Q Residuals dane układają się wzdłuż prostej bliskiej y=x
+
+-   na wykresie Scale-Location widać równomierne rozmieszczenie punktów względem czerwonej krzywej
+
+-   na wykresie Residuals vs Leverage widać, że zdecydowana większość obserwacji znajduje się po lewej stronie, a więc nieliczne z nich wpływają znacząco na zaburzenie wyniku
+
+    Model **nie** jest dobry, choć spełnia założenia i przeszedł pomyślnie diagniostykę, gdyż mamy bardzo mały współczynnik R\^2 (odpowiedzialny za dopasowanie modelu).

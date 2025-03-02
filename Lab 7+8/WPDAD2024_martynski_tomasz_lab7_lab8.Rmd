@@ -1,0 +1,444 @@
+---
+title: "Zadania z laboratorium 7  i laboratorium 8"
+subtitle: "Wybrane pakiety do analizy danych 2024"
+author: "Martyński Tomasz"
+date: "2024-12-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# [Laboratorium 7 - niektóre zadania pominięte]{style="color: red;"}
+
+Numeracja zadań jak w plikach z laboratoriami
+
+## Zadanie 1.2 - Zadanie 1 - kongruencyjny generator liczb losowych
+
+```{r}
+lcm=function(N, x0, a, d, m){
+  x=x0
+  punkty=c(x)
+  for(i in 1:(N-1)){
+    x=((a*x+d)%%m)
+    punkty=c(punkty,x)
+  }
+return(punkty/m)
+}
+
+N=10
+y=lcm(N = 10, x0 = 4, a = 13, d = 0, m = 64)
+library(ggplot2)
+x=seq(1,N,by=1)
+df=data.frame(x,y)
+ggplot(df, aes(x,y))+
+  geom_point()
+
+```
+
+Na podstawie wykresu można stwierdzić, że ten sposób generowania NIE jest "losowy" - widać wzór.
+
+## Zadanie 1.3 - Zadanie 2 - kongruencyjny generator liczb losowych
+
+```{r}
+y=lcm(N = 10, x0 = as.numeric(Sys.time()), a = 1103515245, d = 12345, m = 2 ** 32)
+  
+library(ggplot2)
+x=seq(1,N,by=1)
+df=data.frame(x,y)
+ggplot(df, aes(x,y))+
+  geom_point()
+
+```
+
+Tutaj już widać, że te punkty są generowane w sposób losowy, tzn. nie widać żadnego wzoru.
+
+## Zadanie 2.2.1 - `unif` - 4 wykresy: gęstości i dystrybuanty
+
+```{r}
+par(mfrow=c(2,2))
+x=seq(0,10,by=0.01)
+plot(x,dunif(x,2,7), type='l')
+plot(x,dunif(x,3,4), type='l')
+plot(x,punif(x,2,7), type='l')
+plot(x,punif(x,3,4), type='l')
+```
+
+## Zadanie 2.2.2 - `unif` - funkcja kwantylowa
+
+```{r}
+x=seq(0,1,by=0.01)
+plot(x, qunif(x,0,1),type='l', main='Funkcja kwantylowa dla rozkładu U[0,1]')
+```
+
+## Zadanie2.2.3 - `unif` - histogram i gęstość rozkładu
+
+```{r}
+data=runif(100,2,8)
+hist(data, probability = TRUE)
+abline(h=1/6, col="red")
+```
+
+## Zadanie 2.3.1 - metoda dystrybuanty odwrotnej + rozkład wykładniczy
+
+```{r}
+set.seed(202)
+lambda=2
+# F_x(x)=1-exp(-lambda*x)
+# F^(-1)_x(u)=-1/lambda*log(1-u)
+
+u=runif(5)
+x=-1/lambda*log(1-u)
+x
+```
+
+## Zadanie 2.3.3 - metoda dystrybuanty odwrotnej - rozkład jednostajny
+
+```{r}
+set.seed(202)
+
+#F_x(x)=(x-2)/4
+#F^(-1)_x(u)=2+4u
+
+u=runif(5)
+x1=2+4*u
+x1
+
+x2=runif(5,2,6)
+x2
+```
+
+## Zadanie 2.4.1.2 - symulacja egzaminu
+
+```{r}
+#1.
+
+wyniki=rnorm(200, mean=72, sd=15.2)
+wyniki
+
+#2.
+#P(x>=84)=1-P(x<=84)=1-F_x(84)
+P_84_or_more=1-pnorm(84, mean=72, sd=15.2)
+P_84_or_more
+```
+
+## Zadanie 2.4.1.3 - 3 odchylenia standardowe
+
+```{r}
+# P(mi-3sigma<x<mi+3sigma)=F(mi+3sigma)-F(mi-3sigma)
+mi=0.5
+sigma=2 #sqrt(4)
+
+pnorm(mi+3*sigma, mean=mi, sd=sigma)-pnorm(mi-3*sigma, mean=mi, sd=sigma)
+```
+
+## Zadanie 2.6.1.1 - wykresy rozkładu t-Studenta
+
+```{r}
+x=seq(-4,4,0.1)
+plot(x, dnorm(x), type="l", ylab="Gęstość", lwd=2)
+
+y1=dt(x, 2)
+y2=dt(x, 5)
+y3=dt(x, 10)
+
+lines(x, y1, type="l", col="blue", lwd=1.5)
+lines(x, y2, type="l", col="red", lwd=1.5)
+lines(x, y3, type="l", col="green", lwd=1.5)
+```
+
+Im więcej stopni swobody, tym bardziej rozkład chi-kwadrat przybliża rozkład N(0,1).
+
+## Zadanie 2.6.1.2 - statystyka t
+
+```{r}
+obserwacje=rnorm(10, mean=0.5, sd=sqrt(2))
+srednia=mean(obserwacje)
+odch=sd(obserwacje)
+
+t=(srednia-0.5)/(odch/sqrt(10))
+
+x=seq(-4,4,0.1)
+y=dt(x,9)
+plot(x, y, type="l", col="black")
+abline(v=t, col="red")
+```
+
+## Zadanie 2.8.1.1 - quiz z angielskiego
+
+```{r}
+pbinom(4, 12, prob=0.2)
+```
+
+## Zadanie 4.1 - analiza danych
+
+```{r}
+library(fitdistrplus)
+library("Przewodnik")
+dane=daneSoc
+summary(dane)
+```
+
+Ciśnienie skurczowe:
+
+```{r}
+
+ds=dane$cisnienie.skurczowe 
+#wypróbować rozkład normalny `norm`
+
+hist(ds, breaks = 30)
+boxplot(ds)
+descdist(ds, discrete = FALSE)
+
+fit_ds_norm=fitdist(ds, "norm")
+plot(fit_ds_norm)
+
+gof_results = gofstat(fit_ds_norm, fitnames = c("Normalny"))
+print(gof_results)
+```
+
+Ciśnienie rozkurczowe:
+
+```{r}
+dr=dane$cisnienie.rozkurczowe 
+#wypróbować rozkład logistyczni `logis` oraz normalny `norm`
+
+hist(dr, breaks = 30)
+boxplot(dr)
+descdist(dr, discrete = FALSE)
+
+fit_dr_logis=fitdist(dr, "logis")
+plot(fit_dr_logis)
+
+fit_dr_norm=fitdist(dr, "norm")
+plot(fit_dr_norm)
+
+gof_results = gofstat(list(fit_dr_logis, fit_dr_norm), fitnames = c("Logistyczny", "Normalny"))
+print(gof_results)
+
+```
+
+Wniosek: wartości AIC, BIC oraz statystyk dla rozkładu logistycznego są mniejsze, a więc lepiej przybliża on dane niż rozkład wykładniczy.
+
+Wiek:
+
+```{r}
+dw=dane$wiek
+#wypróbować rozkład beta `beta` oraz jednostajny `unif`
+
+hist(dw, breaks = 30)
+boxplot(dw)
+descdist(dw, discrete = FALSE)
+
+normalize=function(x) {
+  return((x - min(x)) / (max(x) - min(x)))
+}
+
+#Normalizacja na przedział (0,1)
+normalized_dw=normalize(dw)
+normalized_dw[normalized_dw==0]=0.00001
+normalized_dw[normalized_dw==1]=0.99999
+
+fit_dw_beta=fitdist(normalized_dw, "beta")
+plot(fit_dw_beta)
+
+fit_dw_unif=fitdist(normalized_dw, "unif")
+plot(fit_dw_unif)
+
+gof_results=gofstat(list(fit_dw_beta, fit_dw_unif), fitnames = c("Beta", "Jednostajny"))
+print(gof_results)
+```
+
+Wnioski: testy AIC i BIC oraz statystyki pokazują, że rozkład beta przybliża dane lepiej, niż rozkład jednostajny. Nie sposób nie zwrócić uwagi na to, że w statystyce Andersona-Darlinga dla rozkładu jednostajnego otrzymujemy wartość Inf, co sugeruje potencjalnie bardzo dużą niedokładność.
+
+# [Laboratorium 8]{style="color: red;"}
+
+## Zadanie 1.2.6 - regresja liniowa
+
+```{r}
+library(faraway)
+data(gala)
+
+#a)
+model=lm(gala$Species~gala$Endemics+gala$Area+gala$Elevation+gala$Nearest+gala$Scruz+gala$Adjacent)
+summary(model)
+```
+
+```{r}
+#b)
+
+X=cbind(1, gala$Endemics, gala$Area, gala$Elevation, gala$Nearest, gala$Scruz, gala$Adjacent)
+
+Y=c(gala$Species)
+
+coofs=solve(t(X) %*% X) %*% t(X) %*% Y
+coofs
+```
+
+Widać, że otrzymaliśmy takie same współczynniki, jak gdy korzystaliśmy z "summary".
+
+```{r}
+#c)
+sum_licznik=sum((Y-X%*%coofs)^2)
+sum_mianownik=sum((Y-mean(Y))^2)
+
+R2=1-sum_licznik/sum_mianownik
+R2_adj=1-(1-R2)*(length(Y)-1)/(length(Y)-length(coofs))
+
+R2
+R2_adj
+```
+
+Otrzymaliśmy ponownie takie same rezultaty, jak w a).
+
+```{r}
+#d)
+model2=lm(gala$Species~gala$Endemics+gala$Area+gala$Elevation+gala$Nearest+gala$Scruz+gala$Adjacent-1)
+summary(model2)
+```
+
+Drugi model (d) jest prawdopodobnie dokładniejszy, gdyż jego wartości R^2^ i R^2^adj są bliższe 1 niż pierwszego modelu (a). Warto zwrócić jednak uwagę na to, że ma on nieznacznie większy średni błąd prognozy.
+
+```{r}
+#e)
+model3=lm(gala$Species~gala$Elevation+gala$Adjacent-1)
+summary(model3)
+```
+
+Model trzeci (e) jest najbardziej niedokładny - najmniejsze wartości R^2^ i R^2^adj oraz dwa razy większy średni błąd prognozy. Najlepszy zatem wydaje się model drugi (d).
+
+## Zadanie 1.3.1 - wykresy diagnostyczne
+
+```{r}
+#a)
+par(mfrow=c(2,2))
+plot(model2)
+```
+
+Wnioski z wykresów (kolejno):\
+- widać zależność średniej od danych i oddalanie się od zera (to źle)\
+- większość punktów układa się wokół prostej, która z pewnością nie jest równa y=x (to źle)\
+- punkty nie są rozłożone równomiernie względem czerwonej linii (to źle)
+
+Ten model absolutnie nie spełnia założeń.
+
+```{r}
+#b)
+min_indeks=which.min(model2$residuals)
+max_indeks=which.max(model2$residuals)
+
+c(rownames(gala)[max_indeks], rownames(gala)[min_indeks])
+```
+
+```{r}
+#c)
+X=model.matrix(model2)
+
+plot(seq(1,30,1), hat(X), xlab="Index", ylab="Leverages", main="Index plot of Leverages")
+
+linia_reg_kc=2*ncol(X)/nrow(X)
+abline(h=linia_reg_kc)
+
+ind=which(hat(X)>linia_reg_kc)
+gala[ind,]
+gala2=gala[-ind,] #czystsze dane
+gala2
+
+model2_czysty=lm(gala2$Species~gala2$Endemics+gala2$Area+gala2$Elevation+gala2$Nearest+gala2$Scruz+gala2$Adjacent-1)
+
+par(mfrow=c(2,2))
+plot(model2_czysty)
+```
+
+Wydaje się, że usunięcie skrajnych obserwacji przyniosło pewien efekt, bo chociażby na pierszym wykresie widać, że czerwona linia jest bliżej zera i jest mniej "ciągnięta" przez dane. Nie jest jednak idealnie, chociażby na drugim wykresie prosta nadal sporo odbiega od y=x.
+
+## Zadanie 2.3.1 - istotność współczynników
+
+```{r}
+summary(model)
+```
+
+Wyszedł tylko jeden istotny współczynnik, Endemics, oznaczony "\*\*\*".
+
+## Zadanie 2.5 - testowanie założeń
+
+Sprawdzamy cztery warunki:\
+1) postać modelu liniowego: p-value jest bardzo mała, a więc zależność jest liniowa
+
+```{r}
+summary(model2)
+```
+
+2)  Niezależność obserwacji - obserwacje są niezależne (sprawdzamy rząd macierzy zrobionej z nich - wychodzi tyle, ile mamy kolumn =\> są one niezależne )
+
+```{r}
+macierz=cbind(gala$Endemics, gala$Area, gala$Elevation, gala$Nearest, gala$Scruz, gala$Adjacent)
+
+qr(macierz)$rank
+```
+
+3)  Testowanie homoskedantyczności - test Breusch-Pagana: model jest okej np. dla alfa=0.001, aczkolwiek dla większych alf, jak 0.05, należy odrzucić hipotezę zerową, że wariancja jest jednorodna (to źle)
+
+```{r}
+library(lmtest)
+bptest(model2)
+```
+
+4)  Niezależność reszt - test Durbin-Watsona: znowu, dla alfy=0.001 jest okej, ale dla większych już należy odrzucić hipotezę o tym, że są one niezależne (to źle)
+
+```{r}
+library("car")
+durbinWatsonTest(model2)
+```
+
+5)  Reszty a rozkład normalny - test Shapiro-Wilka: reszty mają rzeczywiście rozkład normalny, nawet dla alfa=0.05, gdyż p-value wyszło "całkiem duże".
+
+```{r}
+shapiro.test(model2$residuals)
+hist(model2$residuals)
+```
+
+## Zadanie 2.6.1 - automatyczny wybór zmiennych
+
+```{r}
+model_f=step(lm(Species~., data=gala), direction="forward")
+```
+
+Istotne zmienne: Endemics, Area, Elevation, Nearest, Scruz, Adjacent.
+
+```{r}
+model_b=step(lm(Species~., data=gala), direction="backward")
+```
+
+Istotne zmienne: Endemics, Area, Elevation.
+
+```{r}
+model_fb=step(lm(Species~., data=gala), direction="both")
+```
+
+Istotne zmienne: Endemics, Area, Elevation.
+
+Modele nie zawierają tego samego zestawu zmiennych, a więc sprawdźmy AIC oraz R\^2adj:
+
+```{r}
+AIC(model_f)
+summary(model_f)$adj.r.squared
+
+AIC(model_b)
+summary(model_b)$adj.r.squared
+
+AIC(model_fb)
+summary(model_fb)$adj.r.squared
+```
+
+Modele robione metodą eliminacji "backward" i "forward-backward" są lepsze niż "forward", gdyż mają mniejszą wartość AIC oraz wartość R^2^adj bliższą 1. Względem siebie są identyczne, jeżeli chodzi o zmienne oraz AIC i R^2^adj.
+
+## Zadanie 3.1 - predykcja
+
+```{r}
+obs=data.frame(Endemics=c(15,8), Area=c(30,40), Elevation=c(200, 100))
+predict(model_fb, newdata=obs)
+```
+
+To sensowny wynik, gdyż 41\>=15, 15\>=8 (jest nie mniej gatunków łącznie niż gatunków endemicznych).
