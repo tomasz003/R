@@ -1,0 +1,286 @@
+---
+title: "Lab 5"
+author: "Tomasz Martyński"
+date: "`r format(Sys.time(), '%d.%m.%Y')`"
+output: 
+  html_document:
+    toc: yes
+    theme: 
+      bootswatch: yeti
+      base_font: "Open Sans"
+      heading_font: "Open Sans"
+    highlight: tango
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message =FALSE)
+```
+
+## Przygotowanie danych
+
+```{r}
+library(plotly)
+library(dplyr)
+library(readxl)
+
+energia=read_excel("tabela_energia_2020_2025.xlsx")
+energia$Miesiac=as.Date(paste(energia$Miesiac, "/01", sep=""))
+
+str(energia)
+sum(is.na(energia))
+```
+
+W naszych danych nie ma wartości NA, tak że nie musimy się tym przejmować.
+
+## Zadanie 3.3
+
+```{r}
+wykres=plot_ly(type="scatter", mode="lines")
+
+for(i in 2:9){
+  wykres=add_trace(wykres,
+                 x=energia$Miesiac,
+                 y=energia[[i]],
+                 name=names(energia)[i]
+  )
+}
+
+wykres %>% layout(
+  title="Produkcja energii w kolejnych miesiącach",
+  legend=list(title="Źródła energii", orientation="h",y=-0.33),
+  xaxis=list(title="Miesiąc", tickformat="%m-%Y", tickangle=45),
+  yaxis=list(title="GWh")
+)
+```
+
+## Zadanie 3.5
+
+### 3.5.1
+
+```{r}
+library(gt)
+
+e_rok=energia %>% 
+  mutate(Rok=substr(Miesiac,1,4)) %>%
+  group_by(Rok) %>%
+  summarise(across(where(is.numeric), sum))
+
+names(e_rok)=c("Rok", names(energia[2:9]))
+e_rok %>%
+  gt() %>%
+  tab_header(
+    title="Roczna produkcja energii",
+    subtitle="dane w [GWh]"
+  )
+```
+
+### 3.5.2
+
+```{r}
+e_rok[,-1] %>%
+  as.matrix() %>% 
+  prop.table(margin = 1) ->e_rok[,-1]
+
+e_rok[,-1]=round(e_rok[,-1]*100,2)
+
+e_rok %>% 
+  gt() %>% 
+  tab_header(
+    title="Roczna produkcja energii",
+    subtitle="% udział w danym roku")
+
+wykres_3=plot_ly(type="bar")
+
+for(i in 2:9){
+  wykres_3=add_trace(wykres_3,
+                 x=e_rok[[i]],
+                 y=e_rok$Rok,
+                 name=names(e_rok)[i-1],
+                 type="bar",
+                 orientation="h"
+  )
+}
+
+wykres_3 %>% layout(
+  title="Produkcja energii w kolejnych miesiącach",
+  barmode="stack",
+  legend=list(text="Źródła energii", orientation="h", y=-0.33),
+  xaxis=list(title="Udział (%)", range=c(0,100), tickformat="%m-%Y", tickangle=45),
+  yaxis=list(title="Rok")
+)
+```
+
+## Zadanie 3.6
+
+Spróbujmy pownioskować coś na temat węgla kamiennego i energii z niego wytwarzanej. Wszystkie manipulacje/niedokładności w rozumowaniu oznaczę symbolem "\*".
+
+```{r}
+names(e_rok)[2]="Wegiel_kamienny"
+wegiel=e_rok[,c("Rok", "Wegiel_kamienny")]
+sumy=data.frame(rok=e_rok$Rok, suma=rowSums(e_rok[,2:9]))
+
+plot_ly() %>% 
+  add_trace(data=wegiel, x=~Rok, y=~Wegiel_kamienny, type="bar") %>% layout(
+    title="Energia wyprodukowana z węgla kamiennego",
+    yaxis = list(title = "[GWh]"),
+    xaxis = list(title = "Rok"),
+    margin=100
+    )
+```
+
+Widać, że produkcja maleje, o ile wyrzucimy spod analizy rok 2020\*. Spróbujmy przybliżyć ten trend za pomocą regresji liniowej\*:
+
+```{r}
+wegiel_uciety=wegiel[2:6,]
+wegiel_uciety$Rok_num=as.numeric(wegiel_uciety$Rok)
+model=lm(Wegiel_kamienny ~ Rok_num, data = wegiel_uciety)
+
+wegiel_uciety$pred=predict(model)
+
+plot_ly() %>% 
+  add_trace(data=wegiel_uciety, x=~Rok, y=~Wegiel_kamienny, type="bar", name="Węgiel kamienny") %>%
+  add_trace(data=wegiel_uciety, x=~Rok_num, y=~pred, type="scatter", mode="lines", name="Trend (prosta regresji)") %>% 
+  layout(
+    title="Energia wyprodukowana z węgla kamiennego",
+    yaxis = list(title = "[GWh]"),
+    xaxis = list(title = "Rok"),
+    margin=100
+    )
+```
+
+Biorąc współczynniki malejącej prostej, możemy obliczyć, kiedy Polska w ogóle\* przestanie polegać na węglu kamiennym:
+
+$$
+ax+b=0 \Rightarrow x=\frac{-b}{a}
+$$
+
+```{r}
+b=coef(model)[1]
+a=coef(model)[2]
+koniec_wegla=-b/a
+koniec_wegla
+```
+
+**Chwytliwy tytuł:** "Polska odchodzi od węgla kamiennego! Do 2033r. prognozowana całkowita rezygnacja produkcji energii z tego surowca! [ZOBACZ LINK]".
+
+**Problemy i błędy:**
+
+-   wyrzucenie roku 2020, by mieć pasujący trend pod tezę, jest co najmniej wygodne, a realnie - manipulacją
+
+-   należałoby wziąć dane z szerszego okresu niż 5 lat
+
+-   dane z 2025r. są niepełne (tylko do września) i "ciągną" naszą krzywą regresji w dół
+
+-   największy błąd: nie ma żadnego powodu, by zakładać, że ten trend jest liniowy - ba, raczej nie jest - i następnie ekstrapolować tej linii do zera
+
+## Zadanie 4.2
+
+```{r}
+n=50  #liczba kroków
+N=5  #liczba punktów
+start_options=c(-5,-4,-3,-2,-1,0,1,2,3,4,5)
+
+x_coord=numeric(n)
+x_step=sample(c(-1,1), n, replace=TRUE)
+y_coord=numeric(n)
+y_step=sample(c(-1,1), n, replace=TRUE)
+  
+x_coord[1]=sample(start_options)
+y_coord[1]=sample(start_options)
+  
+for (i in 1:(n-1)){
+  x_coord[i+1]=x_coord[i]+x_step[i]
+  y_coord[i+1]=y_coord[i]+y_step[i]
+}
+
+df_moves=data.frame(x=x_coord, y=y_coord, f=1:n)
+
+figure <- df_moves %>%
+  plot_ly(
+    x = ~x,
+    y = ~y,
+    frame = ~f,
+    type = 'scatter',
+    mode = 'markers',
+    showlegend = F
+  )
+
+figure
+```
+
+## Zadanie 4.4
+
+```{r}
+library(gapminder)
+
+n=50  #liczba kroków
+N=5  #liczba punktów
+start_options=c(-5,-4,-3,-2,-1,0,1,2,3,4,5)
+
+moving_point=function(n, id){
+  x_coord=numeric(n)
+  x_step=sample(c(-1,1), n, replace=TRUE)
+  y_coord=numeric(n)
+  y_step=sample(c(-1,1), n, replace=TRUE)
+  
+  x_coord[1]=sample(start_options)
+  y_coord[1]=sample(start_options)
+  
+  for (i in 1:(n-1)){
+    x_coord[i+1]=x_coord[i]+x_step[i]
+    y_coord[i+1]=y_coord[i]+y_step[i]
+  }
+  
+  dat_fr=data.frame(point=id, x=x_coord, y=y_coord, f=1:n)
+  return(dat_fr)
+}
+
+frames=lapply(1:N, function(i) moving_point(n,i))
+df=bind_rows(frames)
+
+#trail - ślad punktu, bez markerow
+#ramka:
+df_trail=do.call(
+  rbind,
+  lapply(unique(df$f), function(i) {
+    df %>%
+      filter(f <= i) %>%
+      mutate(frame = i)
+  })
+)
+
+df_head=df %>%
+  mutate(frame = f)
+
+#rysowanie traila
+fig=plot_ly()
+fig=fig %>%
+  add_trace(
+    data = df_trail,
+    x = ~x,
+    y = ~y,
+    frame = ~frame,
+    type = "scatter",
+    mode = "lines",
+    color = ~factor(point),
+    line = list(width = 2),
+    showlegend = FALSE
+  )
+
+#zaznaczenie bieżącej lokalizacji punktów jako makrery
+fig=fig %>%
+  add_trace(
+    data = df_head,
+    x = ~x,
+    y = ~y,
+    frame = ~frame,
+    type = "scatter",
+    mode = "markers",
+    color = ~factor(point),
+    marker = list(size = 8),
+    showlegend = FALSE
+  )
+
+fig
+```

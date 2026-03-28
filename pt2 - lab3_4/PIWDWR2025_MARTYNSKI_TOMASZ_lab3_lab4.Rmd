@@ -1,0 +1,196 @@
+---
+title: "Laboratorium 3&4"
+author: "Tomasz Martyński"
+date: "`r format(Sys.time(), '%d.%m.%Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+# Laboratorium 3 i 4
+
+## Lab 3
+
+```{r}
+library(dplyr)
+library(Przewodnik)
+```
+
+#### Zadanie 2.4.5
+
+```{r}
+iris%>%
+  transmute(
+    iris,
+    Area=pi*Petal.Length/2*Petal.Width/2
+  )%>%
+  arrange(Area)->pola_irysow
+
+head(pola_irysow)
+```
+
+#### Zadanie 2.4.6
+
+```{r}
+#a)
+first_q=quantile(pola_irysow$Area,0.25)
+third_q=quantile(pola_irysow$Area,0.75)
+
+pola_irysow %>% 
+  mutate(
+    Status=case_when(
+      Area<=first_q ~ "małe",
+      Area>third_q ~ "duże",
+      TRUE ~ "średnie"
+  )
+)->pola_irysow
+
+head(pola_irysow)
+
+#b)
+pola_irysow %>% 
+  group_by(Status) %>% 
+  count()
+
+```
+
+#### Zadanie 3.1
+
+```{r}
+sem1 = read.csv("semestr1.csv", sep=";", stringsAsFactors=FALSE)
+sem2 = read.csv("semestr2.csv", sep=";", stringsAsFactors=FALSE)
+
+sem1 %>% 
+  inner_join(sem2, by=c("nr_indeksu"="nr_indeksu"))->students
+
+students %>%
+  select(-nazwisko_imie.y)->students
+
+students %>% 
+  filter(if_all(everything(), ~.x!="nzal."))->students
+
+students %>% 
+  mutate_at(names(students)[3:11],as.numeric)->students
+
+ECTS=c(8,10,6,6,8,10,6,3,3)
+weights=ECTS/sum(ECTS)
+
+students %>%
+  rowwise() %>% 
+  mutate(srednia=weighted.mean(c_across(3:11),w=weights)) %>%
+  ungroup()->students
+
+students %>% 
+  arrange(desc(srednia))->students
+
+students %>% 
+  slice_head(prop=0.3)
+```
+
+# Lab 4
+
+### Zadanie 2.1.4
+
+```{r}
+library(microbenchmark)
+library(ggplot2)
+```
+
+```{r}
+n=1000
+x=runif(n,0,1)
+y=numeric(n) #skoro to jest w każdym przypadku, to możemy to zrobić i tutaj
+
+pomiar=microbenchmark(
+  petla_ifelse={for(i in 1:n){
+    if (x[i]>0.5){
+      y[i]=1
+    }
+    else{
+      y[i]=0
+    }
+  }},
+  
+  petla_if={for(i in 1:n){
+    if (x[i]>0.5){
+      y[i]=1
+    }
+  }},
+  
+  ifelse_wektor={ifelse(x>0.5,1,0)},
+  
+  logic={y[x>0.5]=1}
+)
+
+autoplot(pomiar)
+```
+
+### Zadanie 2.1.5
+
+```{r}
+m=10000
+
+paprotka<-function(n){
+  r=sample(x=c(1,2,3,4), size=n, replace=TRUE, prob=c(0.85, 0.07, 0.07, 0.01))
+
+  x=numeric(n+1)
+  y=numeric(n+1)
+
+  for (i in 1:n){
+    if (r[i]==1){
+      x[i+1]=0.85*x[i]+0.04*y[i]
+      y[i+1]=-0.04*x[i]+0.85*y[i]+1.6
+    }else if (r[i]==2){
+      x[i+1]=-0.15*x[i]+0.28*y[i]
+      y[i+1]=0.26*x[i]+0.24*y[i]+0.44
+    }else if (r[i]== 3){
+      x[i+1]=0.2*x[i]-0.26*y[i]
+      y[i+1]=0.23*x[i]+0.22*y[i]+1.6
+    }else{
+      x[i+1]=0
+      y[i+1]=0.16*y[i]
+    }
+  }
+  df=data.frame(x,y)
+  
+  return(df)
+}
+
+porownanie=microbenchmark(
+  same_punkty={paprotka(m)},
+  punkty_plus_rys={paprotka(m); rys=ggplot(paprotka(m))+geom_point(aes(x,y))}
+)
+
+autoplot(porownanie)
+```
+
+### Zadanie 4.1
+
+```{r}
+library(gt)
+```
+
+```{r}
+gt_iris=head(iris,10)
+ramka=gt(gt_iris) 
+
+ramka %>% 
+  tab_header(title="Ramka iris", subtitle="dane z R") %>% 
+  tab_source_note(source_note="Źródło: R") %>% 
+  tab_footnote(footnote="najładniejszy kwiatek :))",
+               locations=cells_body(columns=Sepal.Width, rows=3)) %>% 
+  tab_spanner(label="Działka kielicha", columns = c(Sepal.Length, Sepal.Width)) %>% 
+  tab_spanner(label="Płatek", columns = c(Petal.Length, Petal.Width)) %>% 
+  cols_move_to_start(columns=c(Species)) %>% 
+  cols_label(
+    Species=html("Gatunek"),
+    Sepal.Length=html("Długość"),
+    Sepal.Width=html("Szerokość"),
+    Petal.Length=html("Długość"),
+    Petal.Width=html("Szerokość")
+  )->ramka
+
+ramka
+```
